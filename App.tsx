@@ -6,8 +6,9 @@ import getTheme from './src/theme/components';
 import platform from './src/theme/variables/platform';
 import {Provider} from 'react-redux';
 import Store from './src/redux/store';
-import MainNavigator from './src/components/MainNavigator';
+import MainNavigator from './src/navigators/main';
 const App = () => {
+  console.disableYellowBox = true;
   return (
     <Provider store={Store}>
       <StyleProvider style={getTheme(platform)}>

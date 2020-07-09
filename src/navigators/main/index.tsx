@@ -1,8 +1,8 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import {authRef} from '../../../config/firebase';
-import BottomTabs from '../BottomNavigator';
-import Auth from '../Auth';
+import BottomTabs from '../bottom';
+import Auth from '../../components/Auth';
 type MainNavigatorList = {
   Auth: undefined;
   Dashboard: undefined;
