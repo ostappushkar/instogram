@@ -55,15 +55,14 @@ export default {
 
   // Button
   buttonFontFamily: platform === PLATFORM.IOS ? 'System' : 'Roboto_medium',
-  buttonBackgroundColor: '#ff0000',
   buttonDisabledBg: '#b5b5b5',
   buttonPadding: 6,
   buttonDefaultActiveOpacity: 0.5,
   buttonDefaultFlex: 1,
-  buttonDefaultBorderRadius: 2,
-  buttonDefaultBorderWidth: 1,
+  buttonDefaultBorderRadius: 20,
+  buttonDefaultBorderWidth: 0,
   get buttonPrimaryBg() {
-    return this.buttonBackgroundColor;
+    return this.brandPrimary;
   },
   get buttonPrimaryColor() {
     return this.inverseTextColor;
@@ -93,9 +92,7 @@ export default {
     return this.inverseTextColor;
   },
   get buttonTextSize() {
-    return platform === PLATFORM.IOS
-      ? this.fontSizeBase * 1.1
-      : this.fontSizeBase - 1;
+    return 20;
   },
   get buttonTextSizeLarge() {
     return this.fontSizeBase * 1.5;
@@ -104,7 +101,7 @@ export default {
     return this.fontSizeBase * 0.8;
   },
   get borderRadiusLarge() {
-    return this.fontSizeBase * 3.8;
+    return this.buttonDefaultBorderRadius;
   },
   get iconSizeLarge() {
     return this.iconFontSize * 1.5;
@@ -134,7 +131,7 @@ export default {
   checkboxTextShadowRadius: 0,
 
   // Color
-  brandPrimary: platform === PLATFORM.IOS ? '#007aff' : '#3F51B5',
+  brandPrimary: '#7558F3',
   brandInfo: '#62B1F6',
   brandSuccess: '#5cb85c',
   brandDanger: '#d9534f',
@@ -143,7 +140,7 @@ export default {
   brandLight: '#a9a9a9',
 
   // Container
-  containerBgColor: '#fff',
+  containerBgColor: '#f9f9f9',
 
   // Date Picker
   datePickerFlex: 1,
@@ -277,14 +274,14 @@ export default {
 
   // Tab
   tabBarDisabledTextColor: '#e8e8e8',
-  tabDefaultBg: '#000000',
+  tabDefaultBg: '#f9f9f9',
   topTabBarTextColor: '#e8e8e8',
-  topTabBarActiveTextColor: '#ffffff',
-  topTabBarBorderColor: '#000000',
-  topTabBarActiveBorderColor: '#ffffff',
+  topTabBarActiveTextColor: '#000',
+  topTabBarBorderColor: '#transparent',
+  topTabBarActiveBorderColor: 'transparent',
 
   // Tabs
-  tabBgColor: '#F8F8F8',
+  tabBgColor: 'transparent',
   tabFontSize: 20,
 
   // Text
@@ -305,7 +302,7 @@ export default {
   // Other
   borderRadiusBase: platform === PLATFORM.IOS ? 5 : 2,
   borderWidth: 1 / PixelRatio.getPixelSizeForLayoutSize(1),
-  contentPadding: 10,
+  contentPadding: 0,
   dropdownLinkColor: '#414142',
   inputLineHeight: 24,
   deviceWidth,
