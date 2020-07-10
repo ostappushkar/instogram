@@ -3,7 +3,8 @@
 export default () => {
   const tabTheme = {
     flex: 1,
-    backgroundColor: '#FFF'
+    justifyContent: 'space-between',
+    backgroundColor: 'transparent',
   };
 
   return tabTheme;

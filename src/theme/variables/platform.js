@@ -140,7 +140,7 @@ export default {
   brandLight: '#a9a9a9',
 
   // Container
-  containerBgColor: '#f9f9f9',
+  containerBgColor: 'transparent',
 
   // Date Picker
   datePickerFlex: 1,
@@ -214,6 +214,7 @@ export default {
   },
 
   // Icon
+  iconColor: '#fff',
   iconFamily: 'Ionicons',
   iconFontSize: platform === PLATFORM.IOS ? 30 : 28,
   iconHeaderSize: platform === PLATFORM.IOS ? 33 : 24,
@@ -285,6 +286,7 @@ export default {
   tabFontSize: 20,
 
   // Text
+
   textColor: '#000',
   inverseTextColor: '#fff',
   noteFontSize: 14,
