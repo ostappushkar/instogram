@@ -73,6 +73,7 @@ export default StyleSheet.create({
     lineHeight: 40,
   },
   submit: {
+    height: 42,
     backgroundColor: 'transparent',
     marginTop: 10,
     elevation: 5,
@@ -81,8 +82,8 @@ export default StyleSheet.create({
     marginBottom: 15,
   },
   buttonGradient: {
+    height: 42,
     shadowColor: '#e7200d',
-
     shadowOpacity: 1,
     shadowOffset: {width: 0, height: 10},
     shadowRadius: 25,

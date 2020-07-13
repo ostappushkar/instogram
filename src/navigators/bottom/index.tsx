@@ -2,16 +2,19 @@ import React from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Home from '../../screens/Home';
 import Add from '../../screens/Add';
-import {Icon, View} from 'native-base';
-import {StyleSheet} from 'react-native';
+import {Icon, View, Thumbnail} from 'native-base';
+import {StyleSheet, Alert} from 'react-native';
+import {connect} from 'react-redux';
+import {logOut} from '../../redux/user/actions';
 import LinearGradient from 'react-native-linear-gradient';
 import MaskedView from '@react-native-community/masked-view';
+import {IStoreState} from 'src/interfaces/store';
 type BottomNavList = {
   Home: undefined;
   Second: undefined;
 };
 const BottomNavigator = createBottomTabNavigator<BottomNavList>();
-const BottomTabs = () => {
+const BottomTabs = ({user, logOut}) => {
   return (
     <BottomNavigator.Navigator
       initialRootName="Home"
@@ -31,9 +34,13 @@ const BottomTabs = () => {
             size = 80;
             margin = 30;
           } else if (route.name === 'Profile') {
-            iconName = 'person-circle';
-            size = 35;
-            margin = 0;
+            return (
+              <Thumbnail
+                style={focused ? styles.profileIcon : null}
+                small
+                source={{uri: user?.photoURL}}
+              />
+            );
           }
           return route.name === 'Add' ? (
             <MaskedView
@@ -73,8 +80,20 @@ const BottomTabs = () => {
     </BottomNavigator.Navigator>
   );
 };
-export default BottomTabs;
+const mapState = (state: IStoreState) => {
+  return {
+    user: state.login.currentUser,
+  };
+};
+const mapDispatch = {
+  logOut,
+};
+export default connect(mapState, mapDispatch)(BottomTabs);
 const styles = StyleSheet.create({
+  profileIcon: {
+    borderWidth: 1,
+    borderColor: '#000',
+  },
   addIcon: {
     marginBottom: 38,
     fontSize: 75,

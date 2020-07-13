@@ -3,20 +3,60 @@ import {connect} from 'react-redux';
 import {logIn, googleLogin} from '../../../src/redux/user/actions';
 import {IStoreState} from '../../../src/interfaces/store';
 import GoogleButton from 'react-native-google-button';
-import {Button, Text, View, Item, Input, H2, Icon} from 'native-base';
+import {Button, Text, View, Item, Input, H2, Icon, Toast} from 'native-base';
 import styles from './styles';
 import validate from '../../validation';
 import {Formik} from 'formik';
 import LinearGradient from 'react-native-linear-gradient';
-import {TouchableOpacity, ActivityIndicator} from 'react-native';
+import {TouchableOpacity, ActivityIndicator, Alert} from 'react-native';
 const Login = ({logIn, googleLogin, loading}) => {
   const handleLogin = (values) => {
-    logIn(values.email, values.password, () => {});
+    logIn(
+      values.email,
+      values.password,
+      () => {},
+      (message) => {
+        Toast.show({
+          text: message,
+          type: 'warning',
+          duration: 5000,
+          textStyle: {
+            color: '#fa5a2e',
+          },
+          style: {
+            backgroundColor: '#fff',
+            borderWidth: 1,
+            borderColor: '#fa5a2e',
+            margin: 10,
+            borderRadius: 15,
+          },
+        });
+      },
+    );
   };
   const handleGoogleSignIn = () => {
-    googleLogin(() => {
-      console.log('Logged in with Google');
-    });
+    googleLogin(
+      () => {
+        console.log('Logged in with Google');
+      },
+      (message) => {
+        Toast.show({
+          text: message,
+          type: 'warning',
+          duration: 5000,
+          textStyle: {
+            color: '#fa5a2e',
+          },
+          style: {
+            backgroundColor: '#fff',
+            borderWidth: 1,
+            borderColor: '#fa5a2e',
+            margin: 10,
+            borderRadius: 15,
+          },
+        });
+      },
+    );
   };
   return (
     <View style={styles.content}>
@@ -30,7 +70,6 @@ const Login = ({logIn, googleLogin, loading}) => {
           {({
             handleBlur,
             handleChange,
-            handleSubmit,
             values,
             touched,
             errors,
