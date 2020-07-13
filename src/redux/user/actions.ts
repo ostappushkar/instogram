@@ -2,7 +2,6 @@ import auth from '@react-native-firebase/auth';
 import action from '../actions';
 import actionTypes from './actionTypes';
 import {GoogleSignin} from '@react-native-community/google-signin';
-import {authRef} from '../../../config/firebase';
 export const onAuthStateChanged = (user) => (dispatch) => {
   user
     ? dispatch(
@@ -20,26 +19,22 @@ export const onAuthStateChanged = (user) => (dispatch) => {
         }),
       );
 };
-/* export const logOut = (
+export const logOut = (
   successCallback: () => void = () => {},
   errorCallback: (message: string) => void = () => {},
-) => (dispatch) => {
+) => async (dispatch) => {
   dispatch(action(actionTypes.USER_LOADING));
-  authRef
-    .signOut()
-    .then(() => {
-      localStorage.clear();
-      console.log('Logged out...');
-      dispatch(action(actionTypes.USER_LOADED));
-      successCallback();
-    })
-    .catch((e) => {
-      const {message} = e;
-      console.warn(message);
-      dispatch(action(actionTypes.USER_LOADED));
-      errorCallback(message);
-    });
-}; */
+  try {
+    await auth().signOut();
+    dispatch(action(actionTypes.USER_LOADED));
+    successCallback();
+  } catch (e) {
+    const {message} = e;
+    console.warn(message);
+    dispatch(action(actionTypes.USER_LOADED));
+    errorCallback(message);
+  }
+};
 
 export const googleLogin = (
   successCallback: () => void = () => {},
@@ -107,52 +102,31 @@ export const logIn = (
       errorCallback(err);
     });
 };
-/* export const signUp = (
+export const signUp = (
   email: string,
   password: string,
   username: string,
-  photo: File,
   successCallback: () => void = () => {},
   errorCallback: (message: string) => void = () => {},
 ) => (dispatch) => {
   dispatch(action(actionTypes.USER_LOADING));
-  authRef
+  auth()
     .createUserWithEmailAndPassword(email, password)
     .then(() => {
-      console.log(photo);
-      if (photo.name) {
-        let formData = new FormData();
-        formData.append('image', photo);
-        Http.post('/3/image', formData).then((res) => {
-          authRef.currentUser
-            .updateProfile({
-              photoURL: res.data.link,
-            })
-            .then(() => {
-              dispatch(action(actionTypes.USER_LOADED));
-              successCallback();
-            })
-            .catch((e) => {
-              const {message} = e;
-              dispatch(action(actionTypes.USER_LOADED));
-              errorCallback(message);
-            });
+      auth()
+        .currentUser.updateProfile({
+          displayName: username,
+        })
+        .then(() => {
+          dispatch(action(actionTypes.USER_LOADED));
+          successCallback();
+        })
+        .catch((e) => {
+          const {message} = e;
+          dispatch(action(actionTypes.USER_LOADED));
+          errorCallback(message);
         });
-      } else {
-        authRef.currentUser
-          .updateProfile({
-            displayName: username,
-          })
-          .then(() => {
-            dispatch(action(actionTypes.USER_LOADED));
-            successCallback();
-          })
-          .catch((e) => {
-            const {message} = e;
-            dispatch(action(actionTypes.USER_LOADED));
-            errorCallback(message);
-          });
-      }
+      dispatch(action(actionTypes.USER_LOADED));
     })
     .catch((e) => {
       const {message, code} = e;
@@ -183,7 +157,7 @@ export const logIn = (
     });
 };
 
-export const uploadPhoto = (
+/*export const uploadPhoto = (
   photo: File,
   successCallback: () => void = () => {},
   errorCallback: (message: string) => void = () => {},
