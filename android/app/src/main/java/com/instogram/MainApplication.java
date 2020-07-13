@@ -1,5 +1,5 @@
 package com.instogram;
-
+import io.invertase.firebase.app.ReactNativeFirebaseAppPackage;
 import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;

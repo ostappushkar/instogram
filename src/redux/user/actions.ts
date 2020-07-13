@@ -1,27 +1,26 @@
-import {authRef, GoogleProvider, persistance} from '../../../config/firebase';
-/* import Http from '../../services/http' */
+import auth from '@react-native-firebase/auth';
 import action from '../actions';
 import actionTypes from './actionTypes';
-export const watchAuthState = () => (dispatch) => {
-  authRef.onAuthStateChanged((user: firebase.User) => {
-    user
-      ? dispatch(
-          action(actionTypes.GET_USER, {
-            userLoading: false,
-            isLogged: true,
-            currentUser: user,
-          }),
-        )
-      : dispatch(
-          action(actionTypes.GET_USER, {
-            userLoading: false,
-            isLogged: false,
-            currentUser: null,
-          }),
-        );
-  });
+import {GoogleSignin} from '@react-native-community/google-signin';
+import {authRef} from '../../../config/firebase';
+export const onAuthStateChanged = (user) => (dispatch) => {
+  user
+    ? dispatch(
+        action(actionTypes.GET_USER, {
+          userLoading: false,
+          isLogged: true,
+          currentUser: user,
+        }),
+      )
+    : dispatch(
+        action(actionTypes.GET_USER, {
+          userLoading: false,
+          isLogged: false,
+          currentUser: null,
+        }),
+      );
 };
-export const logOut = (
+/* export const logOut = (
   successCallback: () => void = () => {},
   errorCallback: (message: string) => void = () => {},
 ) => (dispatch) => {
@@ -40,61 +39,31 @@ export const logOut = (
       dispatch(action(actionTypes.USER_LOADED));
       errorCallback(message);
     });
-};
+}; */
 
 export const googleLogin = (
   successCallback: () => void = () => {},
   errorCallback: (message: string) => void = () => {},
-) => (dispatch) => {
+) => async (dispatch) => {
   dispatch(action(actionTypes.USER_LOADING));
-  authRef
-    .setPersistence(persistance)
-    .then(() => {
-      authRef
-        .signInWithRedirect(GoogleProvider)
+  await GoogleSignin.hasPlayServices();
+  await GoogleSignin.signIn()
+    .then(async (userInfo) => {
+      console.log(userInfo);
+      const {idToken} = userInfo;
+      const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+      await auth()
+        .signInWithCredential(googleCredential)
         .then(() => {
-          dispatch(action(actionTypes.USER_LOADED));
           successCallback();
         })
         .catch((e) => {
-          const {message, code} = e;
-          console.warn(message);
-          let err: string;
-          switch (code) {
-            case 'auth/cancelled-popup-request':
-              err = 'Cancelled';
-              break;
-            case 'auth/account-exists-with-different-credential':
-              err = 'Try other method';
-              break;
-            case 'auth/auth-domain-config-required':
-              err = 'Domain config required';
-              break;
-            case 'auth/popup-blocked':
-              err = 'Popup blocked by browser';
-              break;
-            case 'auth/popup-closed-by-user':
-              err = 'Popup closed by user';
-              break;
-            case 'auth/unauthorized-domain':
-              err = 'Unauthorized domain';
-              break;
-            case 'auth/operation-not-allowed':
-              err = 'Operation is not allowed';
-              break;
-
-            default:
-              err = message;
-              break;
-          }
-          dispatch(action(actionTypes.USER_LOADED));
-          errorCallback(err);
+          console.warn(e);
+          errorCallback(e.message);
         });
     })
     .catch((e) => {
-      const {message} = e;
-      console.warn(message);
-      errorCallback(message);
+      console.log(e);
     });
 };
 export const logIn = (
@@ -104,47 +73,38 @@ export const logIn = (
   errorCallback: (message: string) => void = () => {},
 ) => (dispatch) => {
   dispatch(action(actionTypes.USER_LOADING));
-  authRef
-    .setPersistence(persistance)
+  auth()
+    .signInWithEmailAndPassword(email, password)
     .then(() => {
-      authRef
-        .signInWithEmailAndPassword(email, password)
-        .then(() => {
-          dispatch(action(actionTypes.USER_LOADED));
-          successCallback();
-        })
-        .catch((e) => {
-          const {message, code} = e;
-          console.warn(code, message);
-          let err: string;
-          switch (code) {
-            case 'auth/wrong-password':
-              err = 'Wrong password';
-
-              break;
-            case 'auth/invalid-email':
-              err = 'Invalid email';
-              break;
-            case 'auth/user-disabled':
-              err = 'User is disabled';
-              break;
-
-            case 'auth/user-not-found':
-              err = 'User not found';
-              break;
-
-            default:
-              err = message;
-              break;
-          }
-          dispatch(action(actionTypes.USER_LOADED));
-          errorCallback(err);
-        });
+      dispatch(action(actionTypes.USER_LOADED));
+      successCallback();
     })
     .catch((e) => {
-      const {message} = e;
-      console.warn(message);
-      errorCallback(message);
+      const {message, code} = e;
+      console.warn(code, message);
+      let err: string;
+      switch (code) {
+        case 'auth/wrong-password':
+          err = 'Wrong password';
+
+          break;
+        case 'auth/invalid-email':
+          err = 'Invalid email';
+          break;
+        case 'auth/user-disabled':
+          err = 'User is disabled';
+          break;
+
+        case 'auth/user-not-found':
+          err = 'User not found';
+          break;
+
+        default:
+          err = message;
+          break;
+      }
+      dispatch(action(actionTypes.USER_LOADED));
+      errorCallback(err);
     });
 };
 /* export const signUp = (
