@@ -60,7 +60,7 @@ export default StyleSheet.create({
     width: 200,
     height: 70,
     alignSelf: 'flex-start',
-    marginTop: 120 * 0.9,
+    marginTop: 90,
     marginLeft: 15,
     marginBottom: 20,
   },

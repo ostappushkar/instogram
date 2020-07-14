@@ -1,7 +1,7 @@
 import action from '../actions';
 import actionTypes from './actionTypes';
 import {formatDistanceStrict, formatDistance} from 'date-fns';
-import {postsRef, authRef, storageRef} from '../../../config/firebase';
+import {postsRef, storageRef} from '../../../config/firebase';
 import auth from '@react-native-firebase/auth';
 import {IPost} from '../../interfaces/post';
 export const getPosts = () => (dispatch) => {
@@ -13,7 +13,8 @@ export const getPosts = () => (dispatch) => {
       let posts = [];
       for (const post in postsSnap) {
         let comments = postsSnap[post].comments;
-        if (comments.length > 1) {
+        comments.shift();
+        if (comments.length > 0) {
           comments.forEach((comment) => {
             if (comment.date) {
               comment.date = formatDistanceStrict(Date.now(), comment.date, {
@@ -22,6 +23,8 @@ export const getPosts = () => (dispatch) => {
             }
           });
         }
+        let liked = postsSnap[post].liked;
+        liked.shift();
         posts.unshift({
           id: post,
           authorId: postsSnap[post].authorId,
@@ -30,7 +33,7 @@ export const getPosts = () => (dispatch) => {
           userName: postsSnap[post].userName,
           avatar: postsSnap[post].avatar,
           description: postsSnap[post].description,
-          liked: postsSnap[post].liked,
+          liked: liked,
           comments: comments,
           createdAt: formatDistance(Date.now(), postsSnap[post].createdAt, {
             addSuffix: true,
@@ -62,7 +65,8 @@ export const getCurrentPost = (postId: string) => (dispatch) => {
         includeSeconds: true,
       });
       let comments = post.comments;
-      if (comments.length > 1) {
+      comments.shift();
+      if (comments.length > 0) {
         comments.forEach((comment) => {
           if (comment.date) {
             comment.date = formatDistanceStrict(Date.now(), comment.date, {
@@ -71,10 +75,13 @@ export const getCurrentPost = (postId: string) => (dispatch) => {
           }
         });
       }
+      let liked = post.liked;
+      liked.shift();
       post = {
         ...post,
         id: postId,
         comments: comments,
+        liked: liked,
       };
       console.log(post);
       dispatch(action(actionTypes.GET_CURRENT_POST, {post: post}));
@@ -87,7 +94,7 @@ export const getCurrentPost = (postId: string) => (dispatch) => {
 };
 export const postsWatcher = () => (dispatch) => {
   postsRef.on('child_added', (snapshot) => {
-    if (snapshot.val().authorId !== authRef.currentUser?.uid) {
+    if (snapshot.val().authorId !== auth().currentUser?.uid) {
       dispatch(
         action(actionTypes.NEW_POSTS_AVAILABLE, {newPostId: snapshot.key}),
       ),
@@ -108,7 +115,7 @@ export const getUserPosts = () => (dispatch) => {
 
       let posts = [];
       for (const post in postsSnap) {
-        if (postsSnap[post].authorId === authRef.currentUser.uid) {
+        if (postsSnap[post].authorId === auth().currentUser.uid) {
           let comments = postsSnap[post].comments;
           if (comments.length > 1) {
             comments.forEach((comment) => {
@@ -155,40 +162,27 @@ export const addPost = (
   errorCallback: (message: string) => void = () => {},
 ) => (dispatch) => {
   dispatch(action(actionTypes.ADD_POST_LOADING));
-  let photoTask = storageRef
-    .child('images')
-    .put(Uint8Array.from(atob(values.photo), (c) => c.charCodeAt(0)));
-  photoTask.on(
-    'state_changed',
-    null,
-    (error) => {
-      console.log(error.message);
-    },
-    () => {
-      photoTask.snapshot.ref.getDownloadURL().then((photoURL) => {
-        postsRef
-          .push({
-            authorId: authRef.currentUser.uid,
-            imageUrl: photoURL,
-            userName: authRef.currentUser.displayName,
-            avatar: authRef.currentUser.photoURL,
-            description: values.description,
-            comments: [''],
-            liked: [''],
-            createdAt: Date.now(),
-          })
-          .then(() => {
-            dispatch(action(actionTypes.POST_ADDED));
-            successCallback();
-          })
-          .catch((e) => {
-            const {message} = e;
-            dispatch(action(actionTypes.POST_ADDED));
-            errorCallback(message);
-          });
-      });
-    },
-  );
+
+  postsRef
+    .push({
+      authorId: auth().currentUser.uid,
+      imageUrl: 'data:image/jpeg;base64,' + values.photo,
+      userName: auth().currentUser.displayName,
+      avatar: auth().currentUser.photoURL,
+      description: values.description,
+      comments: [''],
+      liked: [''],
+      createdAt: Date.now(),
+    })
+    .then(() => {
+      dispatch(action(actionTypes.POST_ADDED));
+      successCallback();
+    })
+    .catch((e) => {
+      const {message} = e;
+      dispatch(action(actionTypes.POST_ADDED));
+      errorCallback(message);
+    });
 };
 
 export const setLike = (
@@ -202,7 +196,6 @@ export const setLike = (
       .once('value')
       .then((snapshot: firebase.database.DataSnapshot) => {
         let likedArr: string[] = snapshot.val().liked;
-        console.log(likedArr);
         if (likedArr.includes(auth().currentUser.uid)) {
           let index = likedArr.indexOf(auth().currentUser.uid);
           likedArr.splice(index, 1);
@@ -212,6 +205,7 @@ export const setLike = (
           console.log('liked');
         }
         postsRef.child(postId).update({liked: likedArr}, (e) => {
+          likedArr.shift();
           dispatch(
             action(actionTypes.SET_LIKE, {liked: likedArr, postId: postId}),
           );
@@ -235,14 +229,14 @@ export const addComment = (
   successCallback: () => void = () => {},
   errorCallback: (message: string) => void = () => {},
 ) => (dispatch) => {
-  if (authRef.currentUser) {
+  if (auth().currentUser) {
     postsRef
       .child(postId)
       .once('value')
       .then((snapshot: firebase.database.DataSnapshot) => {
         let commentsArr = snapshot.val().comments;
         commentsArr.push({
-          user: authRef.currentUser.displayName,
+          user: auth().currentUser.displayName,
           comment: comment,
           date: Date.now(),
         });
@@ -280,7 +274,7 @@ export const deletePost = (
   successCallback: () => void = () => {},
   errorCallback: (message: string) => void = () => {},
 ) => (dispatch) => {
-  if (post.authorId === authRef.currentUser.uid) {
+  if (post.authorId === auth().currentUser.uid) {
     postsRef
       .child(post.id)
       .remove()

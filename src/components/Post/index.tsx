@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   Button,
   Text,
@@ -8,24 +8,32 @@ import {
   Thumbnail,
   Body,
   Icon,
-  Right,
+  View,
 } from 'native-base';
 import auth from '@react-native-firebase/auth';
 import {connect} from 'react-redux';
 import {setLike} from '../../redux/posts/actions';
-import {Image, StyleSheet, Dimensions, Alert} from 'react-native';
+import {StyleSheet, Dimensions, Easing} from 'react-native';
 import {IPost} from '../../interfaces/post';
 import {IStoreState} from 'src/interfaces/store';
+import Comments from '../CommentsModal';
+import ZoomImage from 'react-native-zoom-image';
 interface IPostProps {
   item: IPost;
   setLike: Function;
 }
 const {width} = Dimensions.get('window');
+
 const Post = (props: IPostProps) => {
   const {item, setLike} = props;
+  const [open, setOpen] = useState(false);
   const handleLike = () => {
     setLike(item.id);
   };
+  const handleModal = () => {
+    item.comments.length ? setOpen(true) : null;
+  };
+  console.log(item);
   const liked = item.liked?.includes(auth().currentUser?.uid);
   return (
     <Card style={styles.post}>
@@ -34,24 +42,25 @@ const Post = (props: IPostProps) => {
           {item.avatar ? (
             <Thumbnail small source={{uri: item.avatar}} />
           ) : (
-            <Icon
+            <View
               style={{
                 borderRadius: 18,
                 height: 36,
-                overflow: 'hidden',
                 width: 36,
                 borderWidth: 1,
-                fontSize: 25,
                 alignSelf: 'center',
                 justifyContent: 'center',
                 alignItems: 'center',
                 borderColor: '#000',
-                //padding: 15,
-              }}
-              name="person-sharp"
-            />
+              }}>
+              <Icon
+                style={{
+                  fontSize: 18,
+                }}
+                name="person-sharp"
+              />
+            </View>
           )}
-
           <Body>
             <Text>{item.userName}</Text>
             <Text note>{item.createdAt}</Text>
@@ -59,8 +68,20 @@ const Post = (props: IPostProps) => {
         </Left>
       </CardItem>
       <CardItem>
-        <Image
+        <ZoomImage
           source={{uri: item.imageUrl}}
+          imgStyle={{
+            height: width - 38,
+            width: null,
+            flex: 1,
+            elevation: 25,
+            resizeMode: 'cover',
+            borderRadius: 30,
+            shadowColor: '#000',
+            shadowOpacity: 1,
+            shadowOffset: {width: 0, height: 25},
+            shadowRadius: 15,
+          }}
           style={{
             height: width - 38,
             width: null,
@@ -72,8 +93,16 @@ const Post = (props: IPostProps) => {
             shadowOffset: {width: 0, height: 25},
             shadowRadius: 15,
           }}
+          duration={200}
+          enableScaling={true}
+          easingFunc={Easing.ease}
         />
       </CardItem>
+      {item.description ? (
+        <CardItem>
+          <Text>{item.description}</Text>
+        </CardItem>
+      ) : null}
       <CardItem>
         <Button onPress={handleLike} transparent>
           <Icon
@@ -82,16 +111,17 @@ const Post = (props: IPostProps) => {
             type="AntDesign"
           />
           <Text style={{color: '#000', paddingLeft: 0}}>
-            {item.liked.length - 1}
+            {item.liked.length}
           </Text>
         </Button>
 
-        <Button transparent>
+        <Button onPress={handleModal} transparent>
           <Icon style={styles.icon} name="message1" type="AntDesign" />
           <Text style={{color: '#000', paddingLeft: 0}}>
-            {item.comments.length - 1}
+            {item.comments.length}
           </Text>
         </Button>
+        <Comments item={item} open={open} setOpen={setOpen} />
       </CardItem>
     </Card>
   );

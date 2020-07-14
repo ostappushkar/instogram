@@ -29,8 +29,8 @@ const Home = ({getPosts, logOut, posts, loading}) => {
       <Content
         refreshControl={
           <RefreshControl
-            colors={['#fa5a2e']}
-            refreshing={false}
+            colors={['#fa5a2e', '#fa6148', '#e7200d']}
+            refreshing={loading}
             onRefresh={onRefresh}
           />
         }
@@ -45,13 +45,9 @@ const Home = ({getPosts, logOut, posts, loading}) => {
           source={require('../../assets/logo.png')}
         />
         <StatusBar barStyle="dark-content" backgroundColor="#E8ECF2" />
-        {loading ? (
-          <ActivityIndicator style={{margin: 50}} size="large" color="#000" />
-        ) : (
-          posts?.map((post, index) => {
-            return <Post item={post} key={index} />;
-          })
-        )}
+        {posts?.map((post, index) => {
+          return <Post item={post} key={index} />;
+        })}
         <Button onPress={handleLogout}>
           <Text>Logout</Text>
         </Button>
