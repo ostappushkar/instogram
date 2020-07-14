@@ -9,6 +9,8 @@ import {
   Body,
   Icon,
   View,
+  Item,
+  Input,
 } from 'native-base';
 import auth from '@react-native-firebase/auth';
 import {connect} from 'react-redux';
@@ -18,14 +20,16 @@ import {IPost} from '../../interfaces/post';
 import {IStoreState} from 'src/interfaces/store';
 import Comments from '../CommentsModal';
 import ZoomImage from 'react-native-zoom-image';
+import {Formik} from 'formik';
 interface IPostProps {
   item: IPost;
+  user: firebase.User;
   setLike: Function;
 }
 const {width} = Dimensions.get('window');
 
 const Post = (props: IPostProps) => {
-  const {item, setLike} = props;
+  const {item, setLike, user} = props;
   const [open, setOpen] = useState(false);
   const handleLike = () => {
     setLike(item.id);
@@ -33,6 +37,7 @@ const Post = (props: IPostProps) => {
   const handleModal = () => {
     item.comments.length ? setOpen(true) : null;
   };
+  const handleAddComment = () => {};
   console.log(item);
   const liked = item.liked?.includes(auth().currentUser?.uid);
   return (
@@ -116,12 +121,32 @@ const Post = (props: IPostProps) => {
         </Button>
 
         <Button onPress={handleModal} transparent>
-          <Icon style={styles.icon} name="message1" type="AntDesign" />
+          <Icon style={styles.icon} name="message-square" type="Feather" />
           <Text style={{color: '#000', paddingLeft: 0}}>
             {item.comments.length}
           </Text>
         </Button>
         <Comments item={item} open={open} setOpen={setOpen} />
+      </CardItem>
+      <CardItem>
+        <Formik initialValues={{comment: ''}} onSubmit={handleAddComment}>
+          {({handleBlur, handleChange, values, submitForm}) => (
+            <Item style={styles.commentInputItem} rounded>
+              <Thumbnail small source={{uri: user.photoURL}} />
+              <Input
+                placeholderTextColor="gray"
+                placeholder="Add a comment..."
+                nativeID="email"
+                onBlur={handleBlur('comment')}
+                onChangeText={handleChange('comment')}
+                value={values.comment}
+              />
+              <Button style={styles.sendCommentButton}>
+                <Icon style={{color: '#000'}} type="Feather" name="send" />
+              </Button>
+            </Item>
+          )}
+        </Formik>
       </CardItem>
     </Card>
   );
@@ -147,6 +172,16 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginLeft: 5,
     marginRight: 5,
+  },
+  commentInputItem: {
+    paddingLeft: 5,
+    borderColor: '#fa5a2e',
+  },
+  sendCommentButton: {
+    backgroundColor: 'transparent',
+    borderRadius: 15,
+    padding: 0,
+    elevation: 0,
   },
 });
 const mapState = (state: IStoreState) => {

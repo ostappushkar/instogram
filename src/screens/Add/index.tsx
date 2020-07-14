@@ -10,7 +10,6 @@ import {
   View,
 } from 'native-base';
 import {Formik} from 'formik';
-import BottomSheet from 'react-native-simple-bottom-sheet';
 import {Image, TouchableOpacity, StyleSheet} from 'react-native';
 import ImagePicker from 'react-native-image-picker';
 import {connect} from 'react-redux';
@@ -35,7 +34,10 @@ const AddPost = ({addPost, open, setOpen}) => {
   const handleSubmit = (values) => {
     values.photo = image;
     console.log(values);
-    addPost(values, () => {});
+    addPost(values, () => {
+      setImage('');
+      values.photo = '';
+    });
   };
   return (
     /*  <BottomSheet isOpen={open}> */
