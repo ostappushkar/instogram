@@ -2,6 +2,7 @@ import action from '../actions';
 import actionTypes from './actionTypes';
 import {formatDistanceStrict, formatDistance} from 'date-fns';
 import {postsRef, authRef, storageRef} from '../../../config/firebase';
+import auth from '@react-native-firebase/auth';
 import {IPost} from '../../interfaces/post';
 export const getPosts = () => (dispatch) => {
   dispatch(action(actionTypes.GET_POSTS_LOADING));
@@ -195,18 +196,19 @@ export const setLike = (
   successCallback: () => void = () => {},
   errorCallback: (message: string) => void = () => {},
 ) => (dispatch) => {
-  if (authRef.currentUser) {
+  if (auth().currentUser) {
     postsRef
       .child(postId)
       .once('value')
       .then((snapshot: firebase.database.DataSnapshot) => {
         let likedArr: string[] = snapshot.val().liked;
-        if (likedArr.includes(authRef.currentUser.uid)) {
-          let index = likedArr.indexOf(authRef.currentUser.uid);
+        console.log(likedArr);
+        if (likedArr.includes(auth().currentUser.uid)) {
+          let index = likedArr.indexOf(auth().currentUser.uid);
           likedArr.splice(index, 1);
           console.log('unliked');
         } else {
-          likedArr.push(authRef.currentUser.uid);
+          likedArr.push(auth().currentUser.uid);
           console.log('liked');
         }
         postsRef.child(postId).update({liked: likedArr}, (e) => {

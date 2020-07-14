@@ -10,15 +10,48 @@ import {
   Icon,
   Right,
 } from 'native-base';
-
+import auth from '@react-native-firebase/auth';
+import {connect} from 'react-redux';
+import {setLike} from '../../redux/posts/actions';
 import {Image, StyleSheet, Dimensions, Alert} from 'react-native';
+import {IPost} from '../../interfaces/post';
+import {IStoreState} from 'src/interfaces/store';
+interface IPostProps {
+  item: IPost;
+  setLike: Function;
+}
 const {width} = Dimensions.get('window');
-const Post = ({item}) => {
+const Post = (props: IPostProps) => {
+  const {item, setLike} = props;
+  const handleLike = () => {
+    setLike(item.id);
+  };
+  const liked = item.liked?.includes(auth().currentUser?.uid);
   return (
     <Card style={styles.post}>
       <CardItem>
         <Left>
-          <Thumbnail small source={{uri: item.avatar}} />
+          {item.avatar ? (
+            <Thumbnail small source={{uri: item.avatar}} />
+          ) : (
+            <Icon
+              style={{
+                borderRadius: 18,
+                height: 36,
+                overflow: 'hidden',
+                width: 36,
+                borderWidth: 1,
+                fontSize: 25,
+                alignSelf: 'center',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderColor: '#000',
+                //padding: 15,
+              }}
+              name="person-sharp"
+            />
+          )}
+
           <Body>
             <Text>{item.userName}</Text>
             <Text note>{item.createdAt}</Text>
@@ -42,14 +75,22 @@ const Post = ({item}) => {
         />
       </CardItem>
       <CardItem>
-        <Button transparent>
-          <Icon name="heart" type="EvilIcons" />
-          <Text>{item.liked.length - 1}</Text>
+        <Button onPress={handleLike} transparent>
+          <Icon
+            style={liked ? styles.liked : styles.icon}
+            name={liked ? 'heart' : 'hearto'}
+            type="AntDesign"
+          />
+          <Text style={{color: '#000', paddingLeft: 0}}>
+            {item.liked.length - 1}
+          </Text>
         </Button>
 
         <Button transparent>
-          <Icon name="comment" type="EvilIcons" />
-          <Text>{item.comments.length - 1}</Text>
+          <Icon style={styles.icon} name="message1" type="AntDesign" />
+          <Text style={{color: '#000', paddingLeft: 0}}>
+            {item.comments.length - 1}
+          </Text>
         </Button>
       </CardItem>
     </Card>
@@ -65,5 +106,23 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 25},
     shadowRadius: 15,
   },
+  icon: {
+    color: '#000',
+    fontSize: 20,
+    marginLeft: 5,
+    marginRight: 5,
+  },
+  liked: {
+    color: '#ff0000',
+    fontSize: 20,
+    marginLeft: 5,
+    marginRight: 5,
+  },
 });
-export default Post;
+const mapState = (state: IStoreState) => {
+  return {
+    user: state.login.currentUser,
+  };
+};
+const mapDispatch = {setLike};
+export default connect(mapState, mapDispatch)(Post);
