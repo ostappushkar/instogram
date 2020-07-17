@@ -136,12 +136,10 @@ const PostScreen = ({route, user, addComment, setLike}) => {
           </Button>
           <Layout>
             <FlatList
-              windowSize={1}
               ItemSeparatorComponent={Divider}
               style={{paddingHorizontal: 10}}
-              data={item.comments}
+              data={item.comments.slice(0, 2)}
               renderItem={renderItem}
-              initialNumToRender={2}
             />
           </Layout>
         </Layout>
@@ -193,7 +191,7 @@ const styles = StyleSheet.create({
   allCommentsButton: {
     minHeight: 20,
     justifyContent: 'flex-start',
-    paddingVertical: 0,
+    paddingVertical: 5,
   },
   postContainer: {
     flex: 1,

@@ -21,7 +21,6 @@ import {
   Input,
 } from '@ui-kitten/components';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
-const {width, height} = Dimensions.get('window');
 const AddPost = ({addPost, open, setOpen}) => {
   const [image, setImage] = useState('');
   const theme = useTheme();
