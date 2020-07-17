@@ -2,12 +2,14 @@ import React, {useEffect} from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import BottomTabs from '../bottom';
 import auth from '@react-native-firebase/auth';
-import Auth from '../../components/Auth';
+import Auth from '../../screens/Auth';
+import Post from '../../screens/Post';
+import AddPost from '../../screens/Add';
 import {connect} from 'react-redux';
 import {IStoreState} from 'src/interfaces/store';
 import {GoogleSignin} from '@react-native-community/google-signin';
 import {onAuthStateChanged} from '../../redux/user/actions';
-import {FIREBASE_WEB_ID} from 'react-native-dotenv';
+import Config from 'react-native-config';
 type MainNavigatorList = {
   Auth: undefined;
   Dashboard: undefined;
@@ -16,7 +18,7 @@ const Main = createStackNavigator<MainNavigatorList>();
 const MainNavigator = ({isLogged, onAuthStateChanged}) => {
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId: FIREBASE_WEB_ID,
+      webClientId: Config.FIREBASE_WEB_ID,
     });
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
     return subscriber;
@@ -27,7 +29,25 @@ const MainNavigator = ({isLogged, onAuthStateChanged}) => {
         headerShown: false,
       }}>
       {isLogged ? (
-        <Main.Screen name="Dashboard" component={BottomTabs} />
+        <>
+          <Main.Screen name="Dashboard" component={BottomTabs} />
+          <Main.Screen
+            options={{
+              headerTransparent: true,
+              headerShown: true,
+              headerTitle: null,
+              headerLeftContainerStyle: {
+                backgroundColor: '#fff',
+                borderRadius: 50,
+                margin: 10,
+                width: 50,
+                height: 45,
+              },
+            }}
+            name="Post"
+            component={Post}
+          />
+        </>
       ) : (
         <Main.Screen name="Auth" component={Auth} />
       )}

@@ -3,51 +3,85 @@ import {
   Button,
   Text,
   Card,
-  CardItem,
-  Left,
-  Thumbnail,
-  Body,
   Icon,
-  View,
-  Item,
-  Input,
-} from 'native-base';
-import auth from '@react-native-firebase/auth';
+  Layout,
+  Avatar,
+  Divider,
+} from '@ui-kitten/components';
 import {connect} from 'react-redux';
-import {setLike} from '../../redux/posts/actions';
-import {StyleSheet, Dimensions, Easing} from 'react-native';
+import {setLike, addComment, deletePost} from '../../redux/posts/actions';
+import {StyleSheet, Dimensions, Easing, Alert} from 'react-native';
 import {IPost} from '../../interfaces/post';
 import {IStoreState} from 'src/interfaces/store';
-import Comments from '../CommentsModal';
 import ZoomImage from 'react-native-zoom-image';
-import {Formik} from 'formik';
+import {useNavigation} from '@react-navigation/native';
 interface IPostProps {
   item: IPost;
   user: firebase.User;
   setLike: Function;
+  addComment: Function;
+  deletePost: Function;
 }
 const {width} = Dimensions.get('window');
 
 const Post = (props: IPostProps) => {
-  const {item, setLike, user} = props;
-  const [open, setOpen] = useState(false);
+  const {item, setLike, user, deletePost} = props;
+  const router = useNavigation();
   const handleLike = () => {
     setLike(item.id);
   };
-  const handleModal = () => {
-    item.comments.length ? setOpen(true) : null;
+  const handleActions = () => {
+    Alert.alert(
+      'Delete Post?',
+      'Current post will be deleted',
+      [
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deletePost(item),
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ],
+      {cancelable: true},
+    );
   };
-  const handleAddComment = () => {};
-  console.log(item);
-  const liked = item.liked?.includes(auth().currentUser?.uid);
+  const liked = item.liked?.includes(user.uid);
+  const ActionsIcon = (props) => (
+    <Icon
+      style={{marginHorizontal: 0}}
+      fill="#000"
+      {...props}
+      name="more-vertical-outline"
+    />
+  );
+
+  const LikeIcon = (props) => (
+    <Icon
+      style={{marginHorizontal: 0}}
+      fill="#000"
+      {...props}
+      name={liked ? 'heart' : 'heart-outline'}
+    />
+  );
+  const CommentsIcon = (props) => (
+    <Icon
+      style={{marginHorizontal: 0}}
+      fill="#000"
+      {...props}
+      name="message-square-outline"
+    />
+  );
   return (
     <Card style={styles.post}>
-      <CardItem>
-        <Left>
+      <Layout style={styles.postHeader}>
+        <Layout style={styles.headerInfo}>
           {item.avatar ? (
-            <Thumbnail small source={{uri: item.avatar}} />
+            <Avatar shape="round" source={{uri: item.avatar}} />
           ) : (
-            <View
+            <Layout
               style={{
                 borderRadius: 18,
                 height: 36,
@@ -58,104 +92,98 @@ const Post = (props: IPostProps) => {
                 alignItems: 'center',
                 borderColor: '#000',
               }}>
-              <Icon
-                style={{
-                  fontSize: 18,
-                }}
-                name="person-sharp"
-              />
-            </View>
+              <Icon style={{height: 18, width: 18}} fill="#000" name="person" />
+            </Layout>
           )}
-          <Body>
-            <Text>{item.userName}</Text>
-            <Text note>{item.createdAt}</Text>
-          </Body>
-        </Left>
-      </CardItem>
-      <CardItem>
-        <ZoomImage
-          source={{uri: item.imageUrl}}
-          imgStyle={{
-            height: width - 38,
-            width: null,
-            flex: 1,
-            elevation: 25,
-            resizeMode: 'cover',
-            borderRadius: 30,
-            shadowColor: '#000',
-            shadowOpacity: 1,
-            shadowOffset: {width: 0, height: 25},
-            shadowRadius: 15,
-          }}
-          style={{
-            height: width - 38,
-            width: null,
-            flex: 1,
-            resizeMode: 'cover',
-            borderRadius: 30,
-            shadowColor: '#000',
-            shadowOpacity: 1,
-            shadowOffset: {width: 0, height: 25},
-            shadowRadius: 15,
-          }}
-          duration={200}
-          enableScaling={true}
-          easingFunc={Easing.ease}
-        />
-      </CardItem>
-      {item.description ? (
-        <CardItem>
-          <Text>{item.description}</Text>
-        </CardItem>
-      ) : null}
-      <CardItem>
-        <Button onPress={handleLike} transparent>
-          <Icon
-            style={liked ? styles.liked : styles.icon}
-            name={liked ? 'heart' : 'hearto'}
-            type="AntDesign"
-          />
-          <Text style={{color: '#000', paddingLeft: 0}}>
-            {item.liked.length}
-          </Text>
-        </Button>
+          <Layout style={styles.postAuthor}>
+            <Text style={{fontWeight: 'bold'}}>{item.userName}</Text>
+            <Text appearance="hint">{item.createdAt}</Text>
+          </Layout>
+        </Layout>
 
-        <Button onPress={handleModal} transparent>
-          <Icon style={styles.icon} name="message-square" type="Feather" />
-          <Text style={{color: '#000', paddingLeft: 0}}>
-            {item.comments.length}
-          </Text>
-        </Button>
-        <Comments item={item} open={open} setOpen={setOpen} />
-      </CardItem>
-      <CardItem>
-        <Formik initialValues={{comment: ''}} onSubmit={handleAddComment}>
-          {({handleBlur, handleChange, values, submitForm}) => (
-            <Item style={styles.commentInputItem} rounded>
-              <Thumbnail small source={{uri: user.photoURL}} />
-              <Input
-                placeholderTextColor="gray"
-                placeholder="Add a comment..."
-                nativeID="email"
-                onBlur={handleBlur('comment')}
-                onChangeText={handleChange('comment')}
-                value={values.comment}
-              />
-              <Button style={styles.sendCommentButton}>
-                <Icon style={{color: '#000'}} type="Feather" name="send" />
-              </Button>
-            </Item>
-          )}
-        </Formik>
-      </CardItem>
+        <Layout style={styles.postActions}>
+          <Button
+            children={() => (
+              <Text style={{color: '#000', fontSize: 16, fontWeight: 'bold'}}>
+                {item.liked.length}
+              </Text>
+            )}
+            size="large"
+            style={styles.actionButton}
+            appearance="ghost"
+            onPress={handleLike}
+            accessoryLeft={LikeIcon}
+          />
+          <Button
+            children={() => (
+              <Text style={{color: '#000', fontSize: 16, fontWeight: 'bold'}}>
+                {item.comments.length}
+              </Text>
+            )}
+            size="large"
+            style={styles.actionButton}
+            appearance="ghost"
+            onPress={() => {
+              router.navigate('Post', {item: item});
+            }}
+            accessoryLeft={CommentsIcon}
+          />
+          {user.uid === item.authorId ? (
+            <Button
+              size="medium"
+              appearance="ghost"
+              onPress={handleActions}
+              accessoryLeft={ActionsIcon}
+            />
+          ) : null}
+        </Layout>
+      </Layout>
+      <Divider />
+      <ZoomImage
+        source={{uri: item.imageUrl}}
+        imgStyle={{
+          height: width - 38,
+          width: null,
+          flex: 1,
+          resizeMode: 'cover',
+          borderRadius: 30,
+          shadowColor: '#000',
+          shadowOpacity: 1,
+          shadowOffset: {width: 0, height: 25},
+          shadowRadius: 15,
+        }}
+        style={{
+          height: width - 38,
+          width: null,
+          flex: 1,
+          resizeMode: 'cover',
+          borderRadius: 30,
+          shadowColor: '#000',
+          shadowOpacity: 1,
+          shadowOffset: {width: 0, height: 25},
+          shadowRadius: 15,
+          marginTop: 15,
+          marginBottom: 15,
+        }}
+        duration={200}
+        enableScaling={true}
+        easingFunc={Easing.ease}
+      />
+      <Divider />
+      {item.description ? (
+        <>
+          <Text style={{marginVertical: 10}}>{item.description}</Text>
+        </>
+      ) : null}
     </Card>
   );
 };
 const styles = StyleSheet.create({
   post: {
     borderWidth: 0,
-    elevation: 0,
-    marginBottom: 20,
+    elevation: 1,
+    marginBottom: 10,
+    marginTop: 10,
     shadowColor: '#555555',
     shadowOpacity: 0.1,
     shadowOffset: {width: 0, height: 25},
@@ -177,11 +205,34 @@ const styles = StyleSheet.create({
     paddingLeft: 5,
     borderColor: '#fa5a2e',
   },
+  actionButton: {
+    color: '#000',
+    paddingHorizontal: 0,
+  },
+  actionIcon: {
+    color: 'gray',
+    paddingHorizontal: 0,
+  },
   sendCommentButton: {
     backgroundColor: 'transparent',
     borderRadius: 15,
     padding: 0,
     elevation: 0,
+  },
+  postHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+    justifyContent: 'space-between',
+  },
+  headerInfo: {
+    flexDirection: 'row',
+  },
+  postAuthor: {
+    marginLeft: 15,
+  },
+  postActions: {
+    flexDirection: 'row',
   },
 });
 const mapState = (state: IStoreState) => {
@@ -189,5 +240,5 @@ const mapState = (state: IStoreState) => {
     user: state.login.currentUser,
   };
 };
-const mapDispatch = {setLike};
+const mapDispatch = {setLike, addComment, deletePost};
 export default connect(mapState, mapDispatch)(Post);

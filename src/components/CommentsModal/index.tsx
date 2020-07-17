@@ -1,81 +1,53 @@
 import React from 'react';
-//import Modal from 'react-native-modal';
-import {
-  Container,
-  Content,
-  Button,
-  Text,
-  List,
-  ListItem,
-  Left,
-  Thumbnail,
-  Body,
-  Right,
-  Icon,
-  View,
-} from 'native-base';
-import {TouchableOpacity, Modal} from 'react-native';
+import {Modal, FlatList, ListRenderItem, ScrollView} from 'react-native';
+import {useTheme, Button, Divider, Text, Layout} from '@ui-kitten/components';
+import Comment from '../Comment';
+import {IComment} from 'src/interfaces/post';
 const CommentsModal = ({open, setOpen, item}) => {
-  let comments = item.comments;
+  const theme = useTheme();
+  const renderItem: ListRenderItem<IComment> = ({item}) => {
+    return <Comment item={item} />;
+  };
   return (
     <Modal
       animationType="slide"
       presentationStyle="formSheet"
       transparent
       visible={open}>
-      <View
+      <Layout
         style={{
           flex: 1,
-          margin: 20,
-          elevation: 25,
           backgroundColor: '#fff',
-          borderRadius: 25,
           padding: 10,
           justifyContent: 'space-between',
         }}>
-        <View>
+        <Layout>
           <Text
             style={{
-              color: '#fa5a2e',
-              fontSize: 20,
-              marginLeft: 10,
+              color: theme['color-primary-default'],
+              fontSize: 24,
+              fontWeight: 'bold',
+              marginLeft: 5,
               marginTop: 10,
             }}>
             Comments.
           </Text>
-          <List>
-            {comments.map((comment, index) => {
-              return (
-                <ListItem key={index} avatar>
-                  <Left>
-                    <Icon type="AntDesign" name="message1" />
-                  </Left>
-                  <Body>
-                    <Text>{comment.user}</Text>
-                    <Text note>{comment.comment}</Text>
-                  </Body>
-                  <Right>
-                    <Text note>{comment.date}</Text>
-                  </Right>
-                </ListItem>
-              );
-            })}
-          </List>
-        </View>
-        <TouchableOpacity
+          <ScrollView>
+            <FlatList
+              ItemSeparatorComponent={Divider}
+              data={item.comments}
+              renderItem={renderItem}
+              initialNumToRender={10}
+            />
+          </ScrollView>
+        </Layout>
+        <Button
           onPress={() => {
             setOpen(false);
-          }}
-          style={{
-            backgroundColor: '#E8ECF2',
-            borderBottomLeftRadius: 15,
-            borderBottomRightRadius: 15,
-            padding: 10,
-            alignItems: 'center',
           }}>
-          <Text>Close</Text>
-        </TouchableOpacity>
-      </View>
+          Close
+        </Button>
+      </Layout>
     </Modal>
   );
 };
