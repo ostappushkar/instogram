@@ -1,7 +1,7 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {googleLogin, signUp} from '../../../src/redux/user/actions';
-import {IStoreState} from '../../../src/interfaces/store';
+import {googleLogin, signUp} from '../../redux/user/actions';
+import {IStoreState} from '../../interfaces/store';
 import GoogleButton from 'react-native-google-button';
 import {Button, Text, View, Item, Input, H2, Icon} from 'native-base';
 import styles from './styles';

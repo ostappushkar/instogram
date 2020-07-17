@@ -1,17 +1,17 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import {Image, ImageBackground} from 'react-native';
-import {logIn, googleLogin} from '../../../src/redux/user/actions';
-import {IStoreState} from '../../../src/interfaces/store';
-import {Container, Tabs, Tab, Content} from 'native-base';
+import {logIn, googleLogin} from '../../redux/user/actions';
+import {IStoreState} from '../../interfaces/store';
+import {Layout, TabView, Tab} from '@ui-kitten/components';
 import styles from './styles';
 import LoginTab from './LoginTab';
 import SignupTab from './SignupTab';
-
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
 const Auth = () => {
   return (
-    <Container style={styles.main}>
-      <Content
+    <Layout style={styles.main}>
+      <KeyboardAwareScrollView
         style={{
           flex: 1,
           backgroundColor: 'transparent',
@@ -29,8 +29,8 @@ const Auth = () => {
             source={require('../../assets/logo-white.png')}
             style={styles.logo}
           />
-          <Tabs
-            tabContainerStyle={{
+          <TabView
+            /*             tabContainerStyle={{
               height: 40,
               width: 200,
               alignSelf: 'flex-start',
@@ -38,33 +38,32 @@ const Auth = () => {
               borderRadius: 15,
               marginBottom: 0,
               marginLeft: 15,
-            }}
+            }} */
             style={{
               backgroundColor: 'transparent',
-
-              alignItems: 'center',
-              justifyContent: 'flex-end',
+              alignItems: 'flex-start',
+              justifyContent: 'flex-start',
+              flex: 1,
             }}>
             <Tab
-              activeTextStyle={{color: '#fff'}}
-              tabStyle={styles.tabLeft}
-              activeTabStyle={[styles.tabLeft, styles.tabActive]}
-              textStyle={{color: '#e7200d'}}
-              heading="Login">
+              // tabStyle={styles.tabLeft}
+              //activeTabStyle={[styles.tabLeft, styles.tabActive]}
+              //textStyle={{color: '#e7200d'}}
+              title="Login">
               <LoginTab />
             </Tab>
             <Tab
-              tabStyle={styles.tabRight}
-              activeTabStyle={[styles.tabRight, styles.tabActive]}
-              activeTextStyle={{color: '#fff'}}
-              textStyle={{color: '#e7200d'}}
-              heading="Signup">
+              // tabStyle={styles.tabRight}
+              // activeTabStyle={[styles.tabRight, styles.tabActive]}
+              // activeTextStyle={{color: '#fff'}}
+              // textStyle={{color: '#e7200d'}}
+              title="Signup">
               <SignupTab />
             </Tab>
-          </Tabs>
+          </TabView>
         </ImageBackground>
-      </Content>
-    </Container>
+      </KeyboardAwareScrollView>
+    </Layout>
   );
 };
 const mapState = (state: IStoreState) => {
