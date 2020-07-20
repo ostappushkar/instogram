@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Dimensions,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import ImagePicker from 'react-native-image-picker';
 import {connect} from 'react-redux';
@@ -21,9 +22,11 @@ import {
   Input,
 } from '@ui-kitten/components';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
-const AddPost = ({addPost, open, setOpen}) => {
+import {ThemeContext} from '../../../theme-context';
+const AddPost = ({addPost, navigation, loading}) => {
   const [image, setImage] = useState('');
   const theme = useTheme();
+  const themeContext = React.useContext(ThemeContext);
   const handleImage = () => {
     const options = {
       title: 'Select image',
@@ -39,80 +42,92 @@ const AddPost = ({addPost, open, setOpen}) => {
     });
   };
   const handleSubmit = (values) => {
-    /* values.photo = image;
+    values.photo = image;
     console.log(values);
     addPost(values, () => {
       setImage('');
       values.photo = '';
-    }); */
+      navigation.navigate('Home');
+    });
   };
   return (
-    <KeyboardAwareScrollView
-      style={{backgroundColor: '#fff', flex: 1, padding: 15}}>
-      <Text
-        style={{
-          color: theme['color-primary-default'],
-          fontSize: 24,
-          fontWeight: 'bold',
-          marginTop: 10,
-          marginBottom: 15,
-        }}>
-        Add Post
-      </Text>
-      <Formik
-        style={{flex: 1}}
-        initialValues={{photo: image, description: ''}}
-        onSubmit={handleSubmit}>
-        {({handleBlur, handleChange, values, submitForm}) => (
-          <Layout style={{justifyContent: 'space-between', flex: 1}}>
-            <Layout>
-              <TouchableOpacity
-                onPress={handleImage}
-                style={styles.uploadButton}>
-                {image ? (
-                  <Image
-                    resizeMode="contain"
-                    height={250}
-                    style={styles.image}
-                    source={{uri: 'data:image/jpeg;base64,' + image}}
-                  />
-                ) : (
-                  <Icon
-                    fill="#000"
-                    style={{width: 36, height: 36}}
-                    name="camera"
-                  />
-                )}
-              </TouchableOpacity>
-              <Input
-                nativeID="description"
-                value={values.description}
-                onBlur={handleBlur('description')}
-                onChangeText={handleChange('description')}
-                multiline
-                textStyle={{minHeight: 64}}
-                placeholder="Description"
+    <Layout style={{flex: 1, padding: 15}}>
+      <KeyboardAwareScrollView style={{flex: 1}}>
+        <Text
+          style={{
+            color: theme['color-primary-default'],
+            fontSize: 24,
+            fontWeight: 'bold',
+            marginTop: 10,
+            marginBottom: 15,
+          }}>
+          Add Post
+        </Text>
+        <Formik
+          style={{flex: 1}}
+          initialValues={{photo: image, description: ''}}
+          onSubmit={handleSubmit}>
+          {({handleBlur, handleChange, values, submitForm}) => (
+            <Layout style={{justifyContent: 'space-between', flex: 1}}>
+              <Layout>
+                <Layout level="2" style={{marginBottom: 10}}>
+                  <TouchableOpacity
+                    onPress={handleImage}
+                    style={styles.uploadButton}>
+                    {image ? (
+                      <Image
+                        resizeMode="contain"
+                        height={250}
+                        style={styles.image}
+                        source={{uri: 'data:image/jpeg;base64,' + image}}
+                      />
+                    ) : (
+                      <Icon
+                        fill={themeContext.color}
+                        style={{width: 36, height: 36}}
+                        name="camera"
+                      />
+                    )}
+                  </TouchableOpacity>
+                </Layout>
+                <Input
+                  nativeID="description"
+                  value={values.description}
+                  onBlur={handleBlur('description')}
+                  onChangeText={handleChange('description')}
+                  multiline
+                  textStyle={{minHeight: 64}}
+                  placeholder="Description"
+                />
+              </Layout>
+              <Button
+                style={{marginTop: 15}}
+                onPress={submitForm}
+                children={() =>
+                  loading ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={{color: '#fff', fontWeight: 'bold'}}>
+                      Confirm
+                    </Text>
+                  )
+                }
               />
             </Layout>
-            <Button style={{marginTop: 15}} onPress={submitForm}>
-              Confirm
-            </Button>
-          </Layout>
-        )}
-      </Formik>
-    </KeyboardAwareScrollView>
+          )}
+        </Formik>
+      </KeyboardAwareScrollView>
+    </Layout>
   );
 };
 const styles = StyleSheet.create({
   uploadButton: {
-    borderWidth: 1,
+    borderWidth: 0,
     borderRadius: 3,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgb(248, 248, 255)',
     borderColor: '#dbdbdb',
     height: 250,
-    marginBottom: 15,
   },
   image: {
     alignSelf: 'stretch',

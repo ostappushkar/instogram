@@ -2,6 +2,7 @@ import auth from '@react-native-firebase/auth';
 import action from '../actions';
 import actionTypes from './actionTypes';
 import {GoogleSignin} from '@react-native-community/google-signin';
+import {storageRef} from '../../../config/firebase';
 export const onAuthStateChanged = (user) => (dispatch) => {
   user
     ? dispatch(
@@ -112,8 +113,9 @@ export const signUp = (
   dispatch(action(actionTypes.USER_LOADING));
   auth()
     .createUserWithEmailAndPassword(email, password)
-    .then(() => {
-      auth()
+    .then(async () => {
+      console.log(username);
+      await auth()
         .currentUser.updateProfile({
           displayName: username,
         })
@@ -126,7 +128,6 @@ export const signUp = (
           dispatch(action(actionTypes.USER_LOADED));
           errorCallback(message);
         });
-      dispatch(action(actionTypes.USER_LOADED));
     })
     .catch((e) => {
       const {message, code} = e;
@@ -157,30 +158,31 @@ export const signUp = (
     });
 };
 
-/*export const uploadPhoto = (
+export const uploadPhoto = (
   photo: File,
   successCallback: () => void = () => {},
   errorCallback: (message: string) => void = () => {},
-) => (dispatch) => {
-  if (photo.name) {
+) => async (dispatch) => {
+  if (photo) {
     dispatch(action(actionTypes.USER_LOADING));
-    let formData = new FormData();
-    formData.append('image', photo);
-    Http.post('/3/image', formData).then((res) => {
-      authRef.currentUser
-        .updateProfile({
-          photoURL: res.data.link,
-        })
-        .then(() => {
-          dispatch(action(actionTypes.USER_LOADED, {photoURL: res.data.link}));
-          successCallback();
-        })
-        .catch((e) => {
-          const {message} = e;
-          dispatch(action(actionTypes.USER_LOADED));
-          errorCallback(message);
-        });
-    });
+    storageRef
+      .child('/avatars/' + auth().currentUser.uid)
+      .put(photo)
+      .then((snapshot) => {
+        console.log(snapshot);
+      });
+    /*     await auth()
+      .currentUser.updateProfile({
+        photoURL: 'data:image/jpeg;base64,' + photo.path,
+      })
+      .then(() => {
+        dispatch(action(actionTypes.USER_LOADED));
+        successCallback();
+      })
+      .catch((e) => {
+        const {message} = e;
+        dispatch(action(actionTypes.USER_LOADED));
+        errorCallback(message);
+      }); */
   }
 };
- */

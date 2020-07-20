@@ -15,6 +15,7 @@ import {IPost} from '../../interfaces/post';
 import {IStoreState} from 'src/interfaces/store';
 import ZoomImage from 'react-native-zoom-image';
 import {useNavigation} from '@react-navigation/native';
+import {ThemeContext} from '../../../theme-context';
 interface IPostProps {
   item: IPost;
   user: firebase.User;
@@ -27,6 +28,7 @@ const {width} = Dimensions.get('window');
 const Post = (props: IPostProps) => {
   const {item, setLike, user, deletePost} = props;
   const router = useNavigation();
+  const themeContext = React.useContext(ThemeContext);
   const handleLike = () => {
     setLike(item.id);
   };
@@ -48,11 +50,11 @@ const Post = (props: IPostProps) => {
       {cancelable: true},
     );
   };
-  const liked = item.liked?.includes(user.uid);
+  const liked = item.liked?.includes(user?.uid);
   const ActionsIcon = (props) => (
     <Icon
+      fill={themeContext.color}
       style={{marginHorizontal: 0}}
-      fill="#000"
       {...props}
       name="more-vertical-outline"
     />
@@ -61,7 +63,7 @@ const Post = (props: IPostProps) => {
   const LikeIcon = (props) => (
     <Icon
       style={{marginHorizontal: 0}}
-      fill="#000"
+      fill={themeContext.color}
       {...props}
       name={liked ? 'heart' : 'heart-outline'}
     />
@@ -69,7 +71,7 @@ const Post = (props: IPostProps) => {
   const CommentsIcon = (props) => (
     <Icon
       style={{marginHorizontal: 0}}
-      fill="#000"
+      fill={themeContext.color}
       {...props}
       name="message-square-outline"
     />
@@ -104,7 +106,7 @@ const Post = (props: IPostProps) => {
         <Layout style={styles.postActions}>
           <Button
             children={() => (
-              <Text style={{color: '#000', fontSize: 16, fontWeight: 'bold'}}>
+              <Text style={{fontSize: 16, fontWeight: 'bold'}}>
                 {item.liked.length}
               </Text>
             )}
@@ -116,7 +118,7 @@ const Post = (props: IPostProps) => {
           />
           <Button
             children={() => (
-              <Text style={{color: '#000', fontSize: 16, fontWeight: 'bold'}}>
+              <Text style={{fontSize: 16, fontWeight: 'bold'}}>
                 {item.comments.length}
               </Text>
             )}
@@ -124,11 +126,11 @@ const Post = (props: IPostProps) => {
             style={styles.actionButton}
             appearance="ghost"
             onPress={() => {
-              router.navigate('Post', {item: item});
+              router.navigate('Post', {item: item.id});
             }}
             accessoryLeft={CommentsIcon}
           />
-          {user.uid === item.authorId ? (
+          {user?.uid === item.authorId ? (
             <Button
               size="medium"
               appearance="ghost"

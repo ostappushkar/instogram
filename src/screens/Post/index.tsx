@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   Layout,
   Text,
@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   ListRenderItem,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import Comments from '../../components/CommentsModal';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scrollview';
@@ -22,14 +23,25 @@ import {connect} from 'react-redux';
 import ZoomImage from 'react-native-zoom-image';
 import {Formik} from 'formik';
 import Comment from '../../components/Comment';
-import {addComment, setLike} from '../../redux/posts/actions';
+import {addComment, setLike, getCurrentPost} from '../../redux/posts/actions';
 import {IComment} from 'src/interfaces/post';
 import {IStoreState} from 'src/interfaces/store';
+import {ThemeContext} from '../../../theme-context';
 const {width} = Dimensions.get('window');
-const PostScreen = ({route, user, addComment, setLike}) => {
-  const {item} = route.params;
+const PostScreen = ({
+  route,
+  user,
+  addComment,
+  setLike,
+  item,
+  getCurrentPost,
+}) => {
+  useEffect(() => {
+    getCurrentPost(route.params.item);
+  }, [getCurrentPost]);
   const [open, setOpen] = useState(false);
-  const liked = item.liked?.includes(user.uid);
+  const liked = item?.liked?.includes(user?.uid);
+  const themeContext = React.useContext(ThemeContext);
   const handleAddComment = (values) => {
     values.comment
       ? addComment(item.id, values.comment, () => {
@@ -47,7 +59,7 @@ const PostScreen = ({route, user, addComment, setLike}) => {
   const LikeIcon = (props) => (
     <Icon
       style={{marginHorizontal: 0}}
-      fill="#000"
+      fill={themeContext.color}
       {...props}
       name={liked ? 'heart' : 'heart-outline'}
     />
@@ -55,7 +67,7 @@ const PostScreen = ({route, user, addComment, setLike}) => {
   const CommentsIcon = (props) => (
     <Icon
       style={{marginHorizontal: 0}}
-      fill="#000"
+      fill={themeContext.color}
       {...props}
       name="message-square-outline"
     />
@@ -63,6 +75,9 @@ const PostScreen = ({route, user, addComment, setLike}) => {
   const renderItem: ListRenderItem<IComment> = ({item}) => {
     return <Comment item={item} />;
   };
+  if (!item) {
+    return <ActivityIndicator style={{alignSelf: 'center'}} />;
+  }
   return (
     <Layout style={{flex: 1}}>
       <KeyboardAwareScrollView contentContainerStyle={styles.postContainer}>
@@ -73,7 +88,7 @@ const PostScreen = ({route, user, addComment, setLike}) => {
             source={{uri: item.imageUrl}}
             resizeMethod="resize">
             <ZoomImage
-              source={{uri: item.imageUrl}}
+              source={{uri: item?.imageUrl}}
               imgStyle={{
                 height: width - 80,
                 width: width - 80,
@@ -107,8 +122,13 @@ const PostScreen = ({route, user, addComment, setLike}) => {
           <Layout style={{flexDirection: 'row'}}>
             <Button
               children={() => (
-                <Text style={{color: '#000', fontSize: 16, fontWeight: 'bold'}}>
-                  {item.liked.length}
+                <Text
+                  style={{
+                    color: themeContext.color,
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                  }}>
+                  {item?.liked?.length}
                 </Text>
               )}
               size="large"
@@ -118,8 +138,13 @@ const PostScreen = ({route, user, addComment, setLike}) => {
             />
             <Button
               children={() => (
-                <Text style={{color: '#000', fontSize: 16, fontWeight: 'bold'}}>
-                  {item.comments.length}
+                <Text
+                  style={{
+                    color: themeContext.color,
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                  }}>
+                  {item?.comments?.length}
                 </Text>
               )}
               size="large"
@@ -128,17 +153,24 @@ const PostScreen = ({route, user, addComment, setLike}) => {
               accessoryLeft={CommentsIcon}
             />
           </Layout>
-          <Button
-            onPress={handleModal}
-            style={styles.allCommentsButton}
-            appearance="ghost">
-            all comments...
-          </Button>
+          {item.comments.length ? (
+            <Button
+              onPress={handleModal}
+              style={styles.allCommentsButton}
+              appearance="ghost">
+              all comments...
+            </Button>
+          ) : (
+            <Text style={{paddingLeft: 10}} appearance="hint">
+              no comments
+            </Text>
+          )}
           <Layout>
             <FlatList
+              extraData={item?.comments}
               ItemSeparatorComponent={Divider}
               style={{paddingHorizontal: 10}}
-              data={item.comments.slice(0, 2)}
+              data={item?.comments.slice(0, 2)}
               renderItem={renderItem}
             />
           </Layout>
@@ -152,16 +184,18 @@ const PostScreen = ({route, user, addComment, setLike}) => {
             );
 
             return (
-              <Input
-                placeholderTextColor="gray"
-                placeholder="Add a comment..."
-                nativeID="comment"
-                style={{margin: 10}}
-                onBlur={handleBlur('comment')}
-                onChangeText={handleChange('comment')}
-                value={values.comment}
-                accessoryRight={SendButton}
-              />
+              <>
+                <Input
+                  placeholderTextColor="gray"
+                  placeholder="Add a comment..."
+                  nativeID="comment"
+                  style={{margin: 10}}
+                  onBlur={handleBlur('comment')}
+                  onChangeText={handleChange('comment')}
+                  value={values.comment}
+                  accessoryRight={SendButton}
+                />
+              </>
             );
           }}
         </Formik>
@@ -173,11 +207,14 @@ const PostScreen = ({route, user, addComment, setLike}) => {
 const mapState = (state: IStoreState) => {
   return {
     user: state.login.currentUser,
+    item: state.posts.currentPost,
+    loading: state.posts.loading,
   };
 };
 const mapDispatch = {
   addComment,
   setLike,
+  getCurrentPost,
 };
 export default connect(mapState, mapDispatch)(PostScreen);
 const styles = StyleSheet.create({

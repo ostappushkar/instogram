@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import {connect} from 'react-redux';
 import {IStoreState} from '../../interfaces/store';
-import {Button, Text, Layout, List, useTheme} from '@ui-kitten/components';
+import {Layout, useTheme, Text, List} from '@ui-kitten/components';
 import {logOut} from '../../redux/user/actions';
 import {getPosts} from '../../redux/posts/actions';
 import Post from '../../components/Post';
@@ -15,15 +15,14 @@ import {
   FlatList,
 } from 'react-native';
 import {IPost} from 'src/interfaces/post';
+import {ThemeContext} from '../../../theme-context';
 const {width} = Dimensions.get('window');
-const Home = ({getPosts, logOut, posts, loading}) => {
+const Home = ({getPosts, posts, loading}) => {
+  const themeContext = React.useContext(ThemeContext);
   const theme = useTheme();
   useEffect(() => {
     getPosts();
   }, [getPosts]);
-  const handleLogout = () => {
-    logOut();
-  };
   const onRefresh = () => {
     getPosts();
   };
@@ -31,8 +30,17 @@ const Home = ({getPosts, logOut, posts, loading}) => {
     return <Post item={item} />;
   };
   return (
-    <Layout style={{backgroundColor: '#fff'}}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <Layout>
+      <StatusBar
+        barStyle={
+          themeContext.theme === 'light' ? 'dark-content' : 'light-content'
+        }
+        backgroundColor={
+          themeContext.theme === 'light'
+            ? theme['color-basic-100']
+            : theme['color-basic-800']
+        }
+      />
       <Image
         style={{
           height: 50,
@@ -42,25 +50,36 @@ const Home = ({getPosts, logOut, posts, loading}) => {
           marginTop: 5,
           alignSelf: 'center',
         }}
-        source={require('../../assets/logo.png')}
-      />
-      <ScrollView
-        refreshControl={
-          <RefreshControl
-            colors={[theme['color-primary-default']]}
-            refreshing={loading}
-            onRefresh={onRefresh}
-          />
+        source={
+          themeContext.theme === 'light'
+            ? require('../../assets/logo.png')
+            : require('../../assets/logo-w.png')
         }
-        contentContainerStyle={{backgroundColor: '#edf1f7'}}>
-        <FlatList
-          refreshing={loading}
+      />
+
+      {posts.length ? (
+        <List
+          refreshControl={
+            <RefreshControl
+              colors={[theme['color-primary-default']]}
+              refreshing={loading}
+              onRefresh={onRefresh}
+            />
+          }
           style={{minHeight: 30}}
           data={posts}
           renderItem={renderItem}
         />
-      </ScrollView>
-      {/* <Button onPress={handleLogout}>Logout</Button> */}
+      ) : (
+        <Text
+          style={{
+            color: theme['color-primary-default'],
+            paddingTop: 20,
+            alignSelf: 'center',
+          }}>
+          no posts available
+        </Text>
+      )}
     </Layout>
   );
 };

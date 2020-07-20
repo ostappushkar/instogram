@@ -12,8 +12,7 @@ export const getPosts = () => (dispatch) => {
       let postsSnap = snapshot.val();
       let posts = [];
       for (const post in postsSnap) {
-        let comments = postsSnap[post].comments;
-        comments.shift();
+        let comments = postsSnap[post].comments || [];
         if (comments.length > 0) {
           comments.forEach((comment) => {
             if (comment.date) {
@@ -23,8 +22,6 @@ export const getPosts = () => (dispatch) => {
             }
           });
         }
-        let liked = postsSnap[post].liked;
-        liked.shift();
         posts.unshift({
           id: post,
           authorId: postsSnap[post].authorId,
@@ -33,7 +30,7 @@ export const getPosts = () => (dispatch) => {
           userName: postsSnap[post].userName,
           avatar: postsSnap[post].avatar,
           description: postsSnap[post].description,
-          liked: liked,
+          liked: postsSnap[post].liked || [],
           comments: comments,
           createdAt: formatDistance(Date.now(), postsSnap[post].createdAt, {
             addSuffix: true,
@@ -64,8 +61,7 @@ export const getCurrentPost = (postId: string) => (dispatch) => {
         addSuffix: true,
         includeSeconds: true,
       });
-      let comments = post.comments;
-      comments.shift();
+      let comments = post.comments || [];
       if (comments.length > 0) {
         comments.forEach((comment) => {
           if (comment.date) {
@@ -75,15 +71,11 @@ export const getCurrentPost = (postId: string) => (dispatch) => {
           }
         });
       }
-      let liked = post.liked;
-      liked.shift();
       post = {
         ...post,
         id: postId,
         comments: comments,
-        liked: liked,
       };
-      console.log(post);
       dispatch(action(actionTypes.GET_CURRENT_POST, {post: post}));
     },
     (e) => {
@@ -116,8 +108,8 @@ export const getUserPosts = () => (dispatch) => {
       let posts = [];
       for (const post in postsSnap) {
         if (postsSnap[post].authorId === auth().currentUser.uid) {
-          let comments = postsSnap[post].comments;
-          if (comments.length > 1) {
+          let comments = postsSnap[post].comments || [];
+          if (comments.length > 0) {
             comments.forEach((comment) => {
               if (comment.date) {
                 comment.date = formatDistanceStrict(Date.now(), comment.date, {
@@ -128,10 +120,9 @@ export const getUserPosts = () => (dispatch) => {
           }
           posts.unshift({
             id: post,
-            liked: postsSnap[post].liked,
+            liked: postsSnap[post].liked || [],
             authorId: postsSnap[post].authorId,
             imageUrl: postsSnap[post].imageUrl,
-            likes: postsSnap[post].likes,
             userName: postsSnap[post].userName,
             avatar: postsSnap[post].avatar,
             description: postsSnap[post].description,
@@ -162,7 +153,6 @@ export const addPost = (
   errorCallback: (message: string) => void = () => {},
 ) => (dispatch) => {
   dispatch(action(actionTypes.ADD_POST_LOADING));
-
   postsRef
     .push({
       authorId: auth().currentUser.uid,
@@ -170,8 +160,8 @@ export const addPost = (
       userName: auth().currentUser.displayName,
       avatar: auth().currentUser.photoURL,
       description: values.description,
-      comments: [''],
-      liked: [''],
+      comments: [],
+      liked: [],
       createdAt: Date.now(),
     })
     .then(() => {
@@ -195,7 +185,7 @@ export const setLike = (
       .child(postId)
       .once('value')
       .then((snapshot: firebase.database.DataSnapshot) => {
-        let likedArr: string[] = snapshot.val().liked;
+        let likedArr: string[] = snapshot.val().liked || [];
         if (likedArr.includes(auth().currentUser.uid)) {
           let index = likedArr.indexOf(auth().currentUser.uid);
           likedArr.splice(index, 1);
@@ -205,7 +195,6 @@ export const setLike = (
           console.log('liked');
         }
         postsRef.child(postId).update({liked: likedArr}, (e) => {
-          likedArr.shift();
           dispatch(
             action(actionTypes.SET_LIKE, {liked: likedArr, postId: postId}),
           );
@@ -234,7 +223,7 @@ export const addComment = (
       .child(postId)
       .once('value')
       .then((snapshot: firebase.database.DataSnapshot) => {
-        let commentsArr = snapshot.val().comments;
+        let commentsArr = snapshot.val().comments || [];
         commentsArr.push({
           user: auth().currentUser.displayName,
           comment: comment,

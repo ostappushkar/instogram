@@ -3,30 +3,25 @@ const {width, height} = Dimensions.get('window');
 export default StyleSheet.create({
   main: {
     alignItems: 'flex-start',
-    justifyContent: 'flex-start',
-    backgroundColor: 'transparent',
+    justifyContent: 'space-between',
     padding: 0,
     flex: 1,
   },
+  scroll: {
+    width: width,
+    flex: 1,
+    backgroundColor: 'transparent',
+    paddingLeft: 20,
+    paddingBottom: 0,
+    paddingRight: 20,
+    paddingTop: 0,
+  },
+  input: {marginTop: 10},
   content: {
     flex: 1,
     backgroundColor: '#00000000',
     justifyContent: 'space-between',
     padding: 25,
-  },
-  inputItem: {
-    borderRadius: 5,
-    marginBottom: 5,
-    paddingLeft: 10,
-    borderColor: 'black',
-  },
-  input: {
-    color: 'black',
-    paddingLeft: 15,
-  },
-  inputError: {
-    color: 'red',
-    paddingLeft: 15,
   },
   tabLeft: {
     borderWidth: 1,
@@ -60,14 +55,13 @@ export default StyleSheet.create({
   logo: {
     width: 200,
     height: 70,
-    alignSelf: 'flex-start',
+    alignSelf: 'center',
     marginTop: 90,
-    marginLeft: 15,
     marginBottom: 20,
   },
   tabHeader: {
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#598BFF',
     textTransform: 'uppercase',
     fontSize: 32,
     marginBottom: 50,
@@ -94,7 +88,7 @@ export default StyleSheet.create({
     justifyContent: 'center',
   },
   googleButton: {
-    marginTop: 10,
+    marginTop: 20,
     borderRadius: 20,
   },
   googleLogo: {
@@ -106,7 +100,6 @@ export default StyleSheet.create({
   },
   errorText: {
     color: '#ff0000',
-    marginTop: 2,
-    marginLeft: 5,
+    marginBottom: 10,
   },
 });

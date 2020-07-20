@@ -4,22 +4,23 @@ import BottomTabs from '../bottom';
 import auth from '@react-native-firebase/auth';
 import Auth from '../../screens/Auth';
 import Post from '../../screens/Post';
-import AddPost from '../../screens/Add';
 import {connect} from 'react-redux';
 import {IStoreState} from 'src/interfaces/store';
 import {GoogleSignin} from '@react-native-community/google-signin';
 import {onAuthStateChanged} from '../../redux/user/actions';
 import Config from 'react-native-config';
+import {postsWatcher} from '../../redux/posts/actions';
 type MainNavigatorList = {
   Auth: undefined;
   Dashboard: undefined;
 };
 const Main = createStackNavigator<MainNavigatorList>();
-const MainNavigator = ({isLogged, onAuthStateChanged}) => {
+const MainNavigator = ({isLogged, onAuthStateChanged, postsWatcher}) => {
   useEffect(() => {
     GoogleSignin.configure({
       webClientId: Config.FIREBASE_WEB_ID,
     });
+    postsWatcher();
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
     return subscriber;
   });
@@ -60,5 +61,5 @@ const mapState = (state: IStoreState) => {
     currentUser: state.login.currentUser,
   };
 };
-const mapDispatch = {onAuthStateChanged};
+const mapDispatch = {onAuthStateChanged, postsWatcher};
 export default connect(mapState, mapDispatch)(MainNavigator);
